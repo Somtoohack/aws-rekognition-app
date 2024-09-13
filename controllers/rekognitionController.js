@@ -31,6 +31,7 @@ const detectFaces = async (req, res) => {
 };
 
 // Handle face comparison
+// Handle face comparison
 const compareFaces = async (req, res) => {
   const sourceImagePath = req.files.sourceImage[0].path;
   const targetImagePath = req.files.targetImage[0].path;
@@ -47,11 +48,19 @@ const compareFaces = async (req, res) => {
 
     const response = await rekognitionClient.send(command);
 
+    // Extract and beautify the response
+    const faceMatches = response.FaceMatches.map((match) => ({
+      similarity: match.Similarity,
+      faceId: match.Face.FaceId,
+      boundingBox: match.Face.BoundingBox,
+      confidence: match.Face.Confidence,
+    }));
+
     // Cleanup
     fs.unlinkSync(sourceImagePath);
     fs.unlinkSync(targetImagePath);
 
-    return res.status(200).json({ faceMatches: response.FaceMatches });
+    return res.status(200).json({ faceMatches });
   } catch (error) {
     // Cleanup
     if (fs.existsSync(sourceImagePath)) {
